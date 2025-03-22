@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "@tailwindcss/vite": "^4.0.15",
+    "axios": "^1.8.4",
+    "react-router-dom": "^7.4.0",
+    "tailwindcss": "^4.0.15"
+  }
+}
