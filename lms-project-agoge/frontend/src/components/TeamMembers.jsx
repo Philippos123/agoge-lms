@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";  // Din axios-instans
+import { getFullMediaUrl } from "../services/api";
+
+
 
 const user = JSON.parse(localStorage.getItem("user")); // Hämta inloggad användare
 console.log("Inloggad användare:", user); // Debug
@@ -42,7 +45,11 @@ const TeamPage = () => {
     const fetchTeam = async () => {
       try {
         const response = await api.get("/team/");
-        console.log("Team data:", response.data); // Debug
+        console.log("Team data:", response.data); // Se vad som kommer från API:et
+        // Kontrollera specifikt profilbild-URL:er
+        response.data.forEach(member => {
+          console.log(`${member.first_name}'s profile image:`, member.profile_img_url);
+        });
         setTeam(response.data);
       } catch (err) {
         console.error("Error fetching team:", err);
@@ -52,6 +59,7 @@ const TeamPage = () => {
   
     fetchTeam();
   }, []);
+  
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -68,10 +76,10 @@ const TeamPage = () => {
         {team.map((member) => (
           <div key={member.id} className="flex items-center space-x-4 p-2 border-b">
             <img
-              src={member.profile_img_url || "/default-profile.jpg"}
-              alt={`${member.first_name} ${member.last_name}`}
-              className="w-12 h-12 rounded-full object-cover"
-            />
+  src={getFullMediaUrl(member.profile_img_url) }
+  alt={`${member.first_name} ${member.last_name}`}
+  className="w-12 h-12 rounded-full object-cover"
+/>
             <div>
               <span className="font-semibold">{member.first_name} {member.last_name}</span>
               <p className="text-sm text-gray-500">{member.email}</p>

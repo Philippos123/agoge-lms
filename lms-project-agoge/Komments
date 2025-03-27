@@ -1,0 +1,50 @@
+// Glöm inte denna! 
+
+const CourseService = {
+  getCourses: async (params = {}) => {
+    try {
+      const response = await api.get('/courses/', { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleCourseError(error);
+    }
+  },
+
+  createCourse: async (courseData) => {
+    const formData = new FormData();
+    
+    // Handle file uploads and nested objects
+    Object.entries(courseData).forEach(([key, value]) => {
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else if (typeof value === 'object') {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
+    });
+
+    try {
+      const response = await api.post('/courses/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleCourseError(error);
+    }
+  },
+
+  getCourseProgress: async (courseId) => {
+    try {
+      const response = await api.get(`/user-progress/${courseId}/`);
+      return response.data;
+    } catch (error) {
+      throw this.handleCourseError(error);
+    }
+  },
+
+  handleCourseError: (error) => {
+    const message = error.response?.data?.detail || 'Course operation failed';
+    return new Error(message);
+  }
+};

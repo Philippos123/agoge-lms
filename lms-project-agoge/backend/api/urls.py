@@ -12,13 +12,21 @@ from .views import (
     CourseToBuyDetail,
     TeamListView,
     invite_member, 
-    remove_member, # Se till att importen är korrekt
+    remove_member,
+    LogoutView,
+    user_courses,
+
+
 )
+
+
 
 # Skapa en router och registrera viewsets
 router = DefaultRouter()
 router.register(r'user', UserViewSet)
 router.register(r'company', CompanyViewSet)
+
+
 
 # API URLs
 urlpatterns = [
@@ -31,11 +39,19 @@ urlpatterns = [
     path('coursetobuy/<int:pk>/', CourseToBuyDetail.as_view(), name='course-detail'),  # Ta bort "api/"
     
     # Team 
+    path("logout/", LogoutView.as_view(), name="logout"),
+
     path('team/', TeamListView.as_view(), name='team-list'),
     path("team/invite/", invite_member, name="invite-member"),
     path("team/remove/<int:user_id>/", remove_member, name="remove-member"),
 
+    path('user/courses/', user_courses, name='user-courses'),
 
+    #Kurser
+    
+    # Specifika API-endpoints
+
+    
     # Inkludera router-URLs
     path('', include(router.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

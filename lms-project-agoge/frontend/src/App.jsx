@@ -6,6 +6,13 @@ import { AuthService } from './services/api';
 import Market from './pages/market'; // Justera sökvägen för market-importen
 import CourseToBuyDetail from './pages/CourseToBuyDetail';
 import Team from './pages/Team';
+import CourseDashboard from './pages/CourseDashboard';
+import { ThemeProvider } from './context/ThemeContext';
+import CompanyCourses from './pages/CourseDashboard';
+import CourseEditor from './components/CreateCourse';
+import TestEditor from './pages/test'
+
+
 
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = AuthService.isLoggedIn();
@@ -43,6 +50,7 @@ function App() {
   }
 
   return (
+    <ThemeProvider>
     <Router>
       <Routes>
         <Route 
@@ -62,11 +70,27 @@ function App() {
           } 
         />
         <Route path="*" element={<Navigate to="/" replace />} />
+        
         <Route path="/market" element={<Market />} />
         <Route path="/team" element={<Team />} />
         <Route path="/course/:courseId" element={<CourseToBuyDetail />} /> {/* Dynamisk rutt */}
+        <Route path="/course-dashboard" element={<CourseDashboard />} />
+        <Route path="/editor" element={<CourseEditor />} />
+        <Route path="/editor/:courseId" element={<CourseEditor />} />
+        <Route path="/test" element={<TestEditor />} />
+
+<Route 
+  path="/company-courses"
+  element={
+    <ProtectedRoute>
+      <CompanyCourses /> 
+    </ProtectedRoute>
+  }
+/>
+
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 

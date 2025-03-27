@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import User, Company, CompanySettings, CourseToBuy
+from .models import ( 
+    User, Company, CompanySettings, CourseToBuy,
+
+    )
 from django.contrib.auth import authenticate
 from django.conf import settings
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -27,12 +30,21 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class CompanySettingsSerializer(serializers.ModelSerializer):
-    company_name = serializers.CharField(source='company.name', read_only=True)
+    logo_url = serializers.SerializerMethodField()
     
     class Meta:
         model = CompanySettings
-        fields = ['id', 'company', 'company_name', 'primary_color', 'text_color', 'secondary_color', 'logo', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['primary_color', 'text_color', 'secondary_color', 'background_color', 'logo', 'logo_url']
+        extra_kwargs = {
+            'logo': {'required': False}
+        }
+    
+    def get_logo_url(self, obj):
+        request = self.context.get('request')
+        if obj.logo and request:
+            return request.build_absolute_uri(obj.logo.url)
+        return None
+
 
 class CourseToBuySerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -50,3 +62,4 @@ class TeamMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'first_name', 'last_name', 'is_admin']
+

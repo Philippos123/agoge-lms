@@ -15,15 +15,20 @@ export default function SignIn() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
       const response = await axios.post('http://localhost:8000/api/token/', {
         email,
         password
-      });
-
-      // Store the JWT token in localStorage
+      }) ;
+  
+      // Korrekt sätt att spara token
       localStorage.setItem('token', response.data.access);
+      
+      // Spara även refresh token om den finns
+      if (response.data.refresh) {
+        localStorage.setItem('refreshToken', response.data.refresh);
+      }
       
       // Store user info
       localStorage.setItem('user', JSON.stringify({
@@ -35,7 +40,7 @@ export default function SignIn() {
         companyId: response.data.company_id,
         companyName: response.data.company_name
       }));
-
+  
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
@@ -48,6 +53,24 @@ export default function SignIn() {
       setLoading(false);
     }
   };
+  const startTokenRefresh = (expiresIn) => {
+    setTimeout(async () => {
+      try {
+        const response = await axios.post('/api/token/refresh/', {
+          refresh: localStorage.getItem('refreshToken')
+        });
+        localStorage.setItem('token', response.data.access);
+        startTokenRefresh(expiresIn); // Continue refreshing
+      } catch (error) {
+        console.error('Token refresh failed', error);
+        AuthService.logout();
+      }
+    }, (expiresIn - 60) * 1000); // Refresh 1 minute before expiration
+  };
+  
+  // In successful login handler
+  const expiresIn = 3600; // Get from backend response
+  startTokenRefresh(expiresIn);
 
   return (
     <div className="bg-gray-900 isolated h-[100vh] w-[100vw] lg:py-30 sm:py-10 flex justify-center items-center">

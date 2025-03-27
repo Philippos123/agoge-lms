@@ -1,32 +1,38 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { AuthService, DashboardService } from "../services/api";
+import { AuthService } from "../services/api";
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { useTheme } from '../context/ThemeContext'; // Importera useTheme
 
-const handleLogout = (e) => {
+const handleLogout = async (e) => {
   e.preventDefault();
-  console.log('User logged out');
-  window.location.href = '/';
-};
 
+  try {
+    await fetch("http://localhost:8000/api/logout/", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")  }` },
+    });
+  } catch (error) {
+    console.error("Logout request failed", error);
+  }
 
-const user = {
-  name: 'Tom Cook',
-  email: 'tom@example.com',
-  imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+  AuthService.logout();
+  window.location.href = "/login";
 };
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', current: true },
-  { name: 'Courses', href: '#', current: false },
+  { name: 'Dashboard', href: '/dashboard', current: false },
+  { name: 'Courses', href: '/course-dashboard', current: false },
   { name: 'Mitt team', href: '/team', current: false },
+  { name: 'Moduler', href: '/editor', current: false }, // Lägg till denna rad
+  { name: 'Mitt teams kurser', href: '/company-courses', current: false },
   { name: 'Marketplace', href: '/market', current: false },
+
 ];
 
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
-  { name: 'Sign out', href: 'http://localhost:3000/login', onClick: handleLogout },
+  { name: 'Sign out', href: '/', onClick: handleLogout },
 ];
 
 function classNames(...classes) {
@@ -34,8 +40,21 @@ function classNames(...classes) {
 }
 
 export default function Navbar({ settings }) {
-  const primaryColor = settings?.primary_color || "";
-  const textColor = settings?.text_color || "";
+  // Använd theme från ThemeContext om settings inte skickas som props
+  const { theme } = useTheme();
+  
+  // Använd settings om de skickas som props, annars använd theme från context
+  const currentTheme = settings || theme;
+  
+  const primaryColor = currentTheme?.primary_color || "";
+  const textColor = currentTheme?.text_color || "";
+  
+  // Hämta användarinformation från AuthService
+  const currentUser = AuthService.getCurrentUser() || {
+    name: 'Användare',
+    email: 'user@example.com',
+    profile_img_url: "/default-profile.jpg"
+  };
 
   return (
     <div className="h-full w-[100vw] flex flex-col inset-0">
@@ -44,11 +63,19 @@ export default function Navbar({ settings }) {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <div className="shrink-0">
-                <img
-                  alt="Agoge"
-                  src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-                  className="size-8"
-                />
+                {currentTheme?.logo ? (
+                  <img
+                    alt="Company Logo"
+                    src={currentTheme.logo}
+                    className="size-20"
+                  />
+                ) : (
+                  <img
+                    alt="Agoge"
+                    src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+                    className="size-8"
+                  />
+                ) }
               </div>
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">
@@ -85,7 +112,11 @@ export default function Navbar({ settings }) {
                     <MenuButton className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                       <span className="absolute -inset-1.5" />
                       <span className="sr-only">Open user menu</span>
-                      <img alt="" src={user.profile_img_url || "/default-profile.jpg"} className="size-8 rounded-full" />
+                      <img 
+                        alt="" 
+                        src={currentUser.profile_img_url || "/default-profile.jpg"} 
+                        className="size-8 rounded-full" 
+                      />
                     </MenuButton>
                   </div>
                   <MenuItems
@@ -96,6 +127,7 @@ export default function Navbar({ settings }) {
                       <MenuItem key={item.name}>
                         <a
                           href={item.href}
+                          onClick={item.onClick}
                           className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
                         >
                           {item.name}
@@ -138,11 +170,15 @@ export default function Navbar({ settings }) {
           <div className="border-t border-gray-700 pt-4 pb-3">
             <div className="flex items-center px-5">
               <div className="shrink-0">
-                <img alt="" src={user.profile_img_url || "/default-profile.jpg"} className="size-10 rounded-full" />
+                <img 
+                  alt="" 
+                  src={currentUser.profile_img_url || "/default-profile.jpg"} 
+                  className="size-10 rounded-full" 
+                />
               </div>
               <div className="ml-3">
-                <div className="text-base/5 font-medium text-white">{user.name}</div>
-                <div className="text-sm font-medium text-gray-400">{user.email}</div>
+                <div className="text-base/5 font-medium text-white">{currentUser.firstName} {currentUser.lastName}</div>
+                <div className="text-sm font-medium text-gray-400">{currentUser.email}</div>
               </div>
               <button
                 type="button"
@@ -159,6 +195,7 @@ export default function Navbar({ settings }) {
                   key={item.name}
                   as="a"
                   href={item.href}
+                  onClick={item.onClick}
                   className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                 >
                   {item.name}
