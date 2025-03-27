@@ -223,32 +223,10 @@ export const getFullMediaUrl = (relativeUrl) => {
 
 
 export const CourseService = {
-  getCourse: async (courseId) => {
-    // Ersätt med din faktiska API-anrop
-    return {
-      id: courseId,
-      title: 'Exempelkurs',
-      modules: [
-        {
-          id: 'module-1',
-          title: 'Introduktion',
-          lessons: [
-            {
-              id: 'lesson-1',
-              title: 'Välkommen',
-              type: 'text',
-              content: '...'
-            }
-          ]
-        }
-      ]
-    };
-  },
-  saveCourse: async (courseData) => {
-    // Implementera sparning
-    console.log('Saving course:', courseData);
-    return { success: true };
-  }
+  getCourses,
+  getCourse,
+  createCourse,
+  updateCourse,
 };
 
 
